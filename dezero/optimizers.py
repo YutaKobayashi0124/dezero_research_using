@@ -1,4 +1,5 @@
 import math
+import random
 from dezero import cuda, Parameter
 
 
@@ -21,6 +22,7 @@ class Optimizer:
             f(params)
 
         for param in params:
+            param = random.gauss(param.data, 0.1)
             self.update_one(param)
 
     def update_one(self, param):
