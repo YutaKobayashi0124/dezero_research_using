@@ -22,7 +22,7 @@ class Optimizer:
             f(params)
 
         for param in params:
-            param.data = random.gauss(param.grad, 0.1)
+            param.grad = random.gauss(param.grad, 0.1)
             self.update_one(param)
 
     def update_one(self, param):
