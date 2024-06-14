@@ -22,7 +22,8 @@ class Optimizer:
             f(params)
 
         for param in params:
-            param_var = param.grad.data * 0.01
+            param_abs = math.fabs(param.grad.data)
+            param_var = math.log(param_abs + 1) 
             param.grad.data = random.gauss(param.grad.data, param_var)
             self.update_one(param)
 
