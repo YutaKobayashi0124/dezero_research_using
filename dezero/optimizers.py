@@ -85,7 +85,7 @@ class SGD(Optimizer):
 
     def update_one(self, param):
         v = self.lr * param.grad.data
-        r = random.gauss(v, 0.1) #パラメータの更新値をガウス分布で決定
+        r = random.gauss(v, 1.0) #パラメータの更新値をガウス分布で決定
         param.data -= r
 
 
@@ -105,7 +105,7 @@ class MomentumSGD(Optimizer):
         v = self.vs[v_key]
         v *= self.momentum
         v -= self.lr * param.grad.data
-        r =  random.gauss(v, 0.1) #パラメータの更新値をガウス分布で決定
+        r =  random.gauss(v, 1.0) #パラメータの更新値をガウス分布で決定
         param.data += r
 
 
@@ -130,7 +130,7 @@ class AdaGrad(Optimizer):
 
         h += grad * grad
         v = lr * grad / (xp.sqrt(h) + eps)
-        r = random.gauss(v, 0.1) #パラメータの更新値をガウス分布で決定
+        r = random.gauss(v, 1.0) #パラメータの更新値をガウス分布で決定
         param.data -= r
 
 
@@ -160,7 +160,7 @@ class AdaDelta(Optimizer):
         dx = xp.sqrt((msdx + eps) / (msg + eps)) * grad
         msdx *= rho
         msdx += (1 - rho) * dx * dx
-        r = random.gauss(dx, 0.1) #パラメータの更新値をガウス分布で決定
+        r = random.gauss(dx, 1.0) #パラメータの更新値をガウス分布で決定
         param.data -= r
 
 
@@ -200,5 +200,5 @@ class Adam(Optimizer):
         m += (1 - beta1) * (grad - m)
         v += (1 - beta2) * (grad * grad - v)
         r = self.lr * m / (xp.sqrt(v) + eps)
-        r = random.gauss(r, 0.1) #パラメータの更新値をガウス分布で決定
+        r = random.gauss(r, 1.0) #パラメータの更新値をガウス分布で決定
         param.data -= r
