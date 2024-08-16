@@ -298,6 +298,40 @@ def linear_simple(x, W, b=None):
     t.data = None  # Release t.data (ndarray) for memory efficiency
     return y
 
+#RBF関数
+class RBF(Function):
+    def forward(self, x, c, gamma):
+        self.gamma = gamma
+        diff = x[:, np.newaxis, :] - self.centers.data[np.newaxis, :, :]
+        self.diff = diff
+        squared_diff = np.sum(diff ** 2, axis=2)
+        y = np.exp(-self.gamma * squared_diff)
+
+        return y
+
+    def backward(self, gy):
+        # 順伝播で保持した diff を使用
+        diff = self.diff
+
+        # 差の二乗を計算
+        squared_diff = np.sum(diff ** 2, axis=2)
+
+        # RBF 出力の再計算
+        rbf_output = np.exp(-self.gamma * squared_diff)
+
+        # gx の計算
+        gx = -2 * self.gamma * gy.data[:, :, np.newaxis] * diff * rbf_output[:, :, np.newaxis]
+        gx = np.sum(gx, axis=1)
+
+        # gc の計算
+        gc = 2 * self.gamma * gy.data[:, :, np.newaxis] * diff * rbf_output[:, :, np.newaxis]
+        gc = -np.sum(gc, axis=0)
+
+        return Variable(gx), Variable(gc)
+
+
+def rbf(x, c, gamma):
+    return RBF()(x, c, gamma)
 
 # =============================================================================
 # activation function: sigmoid / relu / softmax / log_softmax / leaky_relu
