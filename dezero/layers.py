@@ -84,7 +84,7 @@ class Layer:
 
 
 # =============================================================================
-# Linear / Conv2d / Deconv2d
+# Linear / RBF / Conv2d / Deconv2d
 # =============================================================================
 class Linear(Layer):
     def __init__(self, out_size, nobias=False, dtype=np.float32, in_size=None):
@@ -116,6 +116,32 @@ class Linear(Layer):
         y = F.linear(x, self.W, self.b)
         return y
 
+#RBF(Layer)
+class RBF(Layer):
+    def __init__(self, out_size, dtype=np.float32, in_size=None, gamma = 1.0):
+        super().__init__()
+        self.in_size = in_size
+        self.out_size = out_size
+        self.gamma = gamma
+        self.dtype = dtype
+
+        self.C = Parameter(None, name='C')
+        if self.in_size is not None:
+            self._init_C()
+
+    def _init_C(self, xp=np):
+        I, O = self.in_size, self.out_size
+        C_data = xp.random.randn(I, O).astype(self.dtype) * np.sqrt(1 / I)
+        self.C.data = C_data
+
+    def forward(self, x):
+        if self.C.data is None:
+            self.in_size = C.shape[1]
+            xp = cuda.get_array_module(x)
+            self._init_C(xp)
+
+        y = rbf(x, self.C, self.gamma)
+        return y
 
 class Conv2d(Layer):
     def __init__(self, out_channels, kernel_size, stride=1,
