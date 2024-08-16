@@ -445,6 +445,19 @@ class LeakyReLU(Function):
 def leaky_relu(x, slope=0.2):
     return LeakyReLU(slope)(x)
 
+class Identity(Function):
+    def forward(self, x):
+        # 恒等関数は入力をそのまま返す
+        return x
+
+    def backward(self, gy):
+        # 逆伝播でも勾配をそのまま返す
+        return gy
+
+def identity(x):
+    return Identity()(x)
+
+
 
 # =============================================================================
 # loss function: mean_squared_error / softmax_cross_entropy / sigmoid_cross_entropy / binary_cross_entropy
