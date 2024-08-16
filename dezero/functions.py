@@ -181,7 +181,7 @@ def flatten(x):
 
 
 # =============================================================================
-# sum / sum_to / broadcast_to / average / matmul / linear
+# sum / sum_to / broadcast_to / average / matmul / linear / RBF
 # =============================================================================
 class Sum(Function):
     def __init__(self, axis, keepdims):
@@ -308,7 +308,7 @@ class RBF(Function):
         y = np.exp(-self.gamma * squared_diff)
 
         return y
-
+ 
     def backward(self, gy):
         # 順伝播で保持した diff を使用
         diff = self.diff
