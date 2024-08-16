@@ -7,7 +7,7 @@ from dezero import utils
 
 
 # =============================================================================
-# Model / Sequential / MLP
+# Model / Sequential / MLP / RBFN
 # =============================================================================
 class Model(Layer):
     def plot(self, *inputs, to_file='model.png'):
@@ -45,6 +45,23 @@ class MLP(Model):
             x = self.activation(l(x))
         return self.layers[-1](x)
 
+#放射規定関数ネットワーク(RBFN)モデル
+class RBFN(Model):
+    def __init__(self, fc_output_sizes):
+        super().__init__()
+        self.layers = []
+
+        for i, out_size in enumerate(fc_output_sizes):
+            layer = L.RBF(out_size)
+            setattr(self, 'l' + str(i), layer)
+            self.layers.append(layer)
+
+    def forward(self, x):
+        for l in self.layers[:-1]:
+            x = identity(l(x))  # 恒等関数を適用
+
+        # 出力層にソフトマックス関数を適用
+        return F.softmax(self.layers[-1](x))
 
 # =============================================================================
 # VGG
