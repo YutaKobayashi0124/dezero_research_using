@@ -58,7 +58,8 @@ class RBFN(Model):
 
     def forward(self, x):
         for l in self.layers[:-1]:
-            x = identity(l(x))  # 恒等関数を適用
+            x = F.identity(l(x))  # 恒等関数を適用
+
 
         # 出力層にソフトマックス関数を適用
         return F.softmax(self.layers[-1](x))
