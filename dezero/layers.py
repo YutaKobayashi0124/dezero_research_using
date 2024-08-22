@@ -5,6 +5,7 @@ import dezero.functions as F
 from dezero import cuda
 from dezero.core import Parameter
 from dezero.utils import pair
+from dezero.functions import rbf
 
 
 # =============================================================================
