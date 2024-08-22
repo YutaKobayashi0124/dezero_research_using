@@ -122,7 +122,7 @@ class RBF(Layer):
         super().__init__()
         self.in_size = in_size
         self.out_size = out_size
-        self.gamma = gamma
+        self.gamma = np.array(gamma, dtype=dtype)  # Ensure gamma is a numpy array
         self.dtype = dtype
 
         # C は重みとして使用される
