@@ -146,7 +146,7 @@ class RBF(Layer):
             self._init_C(xp)
 
         # RBF の計算を行う
-        y = F.rbf(x, self.C.data, self.gamma.data)  # self.C.data に修正
+        y = F.rbf(x, self.C, self.gamma) 
         return y
 
 
