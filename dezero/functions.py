@@ -301,6 +301,7 @@ def linear_simple(x, W, b=None):
 #RBF関数
 class RBF(Function):
     def forward(self, x, c, gamma):
+        self.gamma = gamma 
         diff = x[:, np.newaxis, :] - c[np.newaxis, :, :]
         self.diff = diff
         squared_diff = np.sum(diff ** 2, axis=2)
