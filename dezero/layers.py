@@ -116,32 +116,36 @@ class Linear(Layer):
         y = F.linear(x, self.W, self.b)
         return y
 
-#RBF(Layer)
 class RBF(Layer):
-    def __init__(self, out_size, dtype=np.float32, in_size=None, gamma = 1.0):
+    def __init__(self, out_size, dtype=np.float32, in_size=None, gamma=1.0):
         super().__init__()
         self.in_size = in_size
         self.out_size = out_size
         self.gamma = gamma
         self.dtype = dtype
 
+        # C は重みとして使用される
         self.C = Parameter(None, name='C')
         if self.in_size is not None:
             self._init_C()
 
     def _init_C(self, xp=np):
         I, O = self.in_size, self.out_size
-        C_data = xp.random.randn(I, O).astype(self.dtype) * np.sqrt(1 / I)
+        # 重み行列 C の初期化
+        C_data = xp.random.randn(O, I).astype(self.dtype) * np.sqrt(1 / I)
         self.C.data = C_data
 
     def forward(self, x):
+        # C が初期化されていない場合、初期化を行う
         if self.C.data is None:
-            self.in_size = C.shape[1]
+            self.in_size = x.shape[1]  # 入力サイズを設定
             xp = cuda.get_array_module(x)
             self._init_C(xp)
 
+        # RBF の計算を行う
         y = rbf(x, self.C, self.gamma)
         return y
+
 
 class Conv2d(Layer):
     def __init__(self, out_channels, kernel_size, stride=1,
