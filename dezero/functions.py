@@ -302,7 +302,7 @@ def linear_simple(x, W, b=None):
 class RBF(Function):
     def forward(self, x, c, gamma):
         self.gamma = gamma
-        diff = x[:, np.newaxis, :] - self.c[np.newaxis, :, :]
+        diff = x[:, np.newaxis, :] - self.C.data[np.newaxis, :, :]
         self.diff = diff
         squared_diff = np.sum(diff ** 2, axis=2)
         y = np.exp(-self.gamma * squared_diff)
