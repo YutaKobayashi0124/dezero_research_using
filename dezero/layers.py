@@ -143,8 +143,9 @@ class RBF(Layer):
             self._init_C(xp)
 
         # RBF の計算を行う
-        y = rbf(x, self.C, self.gamma)
+        y = rbf(x, self.C.data, self.gamma)  # self.C.data に修正
         return y
+
 
 
 class Conv2d(Layer):
