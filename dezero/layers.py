@@ -6,6 +6,7 @@ from dezero import cuda
 from dezero.core import Parameter
 from dezero.utils import pair
 from dezero.functions import rbf
+from dezero.core import Function, Variable, as_variable, as_array
 
 
 # =============================================================================
@@ -122,7 +123,8 @@ class RBF(Layer):
         super().__init__()
         self.in_size = in_size
         self.out_size = out_size
-        self.gamma = np.array(gamma, dtype=dtype)  # Ensure gamma is a numpy array
+        # `gamma` を `Variable` にラップし、初期値を設定
+        self.gamma = Variable(np.array(gamma, dtype=dtype))
         self.dtype = dtype
 
         # C は重みとして使用される
