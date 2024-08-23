@@ -341,7 +341,18 @@ class RBF(Function):
         gc = 2 * self.gamma * gy.data[:, :, np.newaxis] * diff * rbf_output[:, :, np.newaxis]
         gc = -np.sum(gc, axis=0)
 
-        return Variable(gx), Variable(gc)
+        # gxの標準化
+        mean_gx = gx.mean(axis=0, keepdims=True)
+        std_gx = gx.std(axis=0, keepdims=True)
+        gx_standardized = (gx - mean_gx) / (std_gx + 1e-7)  # 分散が0にならないように小さい値を足す
+
+        # gcの標準化
+        mean_gc = gc.mean(axis=0, keepdims=True)
+        std_gc = gc.std(axis=0, keepdims=True)
+        gc_standardized = (gc - mean_gc) / (std_gc + 1e-7)  # 分散が0にならないように小さい値を足す
+
+        return Variable(gx_standardized), Variable(gc_standardized)
+
 
 
 def rbf(x, c, gamma):
