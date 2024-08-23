@@ -299,6 +299,15 @@ def linear_simple(x, W, b=None):
     return y
 
 #RBF関数
+"""class RBF(Function):
+    def forward(self, x, c, gamma):
+        self.gamma = gamma 
+        self.diff = x[:, np.newaxis, :] - c[np.newaxis, :, :]
+        squared_diff = np.sum(self.diff ** 2, axis=2)
+        y = np.exp(gamma * squared_diff)
+
+        return y"""
+    
 class RBF(Function):
     def forward(self, x, c, gamma):
         self.gamma = gamma 
@@ -306,7 +315,13 @@ class RBF(Function):
         squared_diff = np.sum(self.diff ** 2, axis=2)
         y = np.exp(gamma * squared_diff)
 
-        return y
+        # 標準化
+        mean_y = y.mean(axis=1, keepdims=True)
+        std_y = y.std(axis=1, keepdims=True)
+        y_standardized = (y - mean_y) / (std_y + 1e-7)  # 分散が0にならないように小さい値を足す
+
+        return y_standardized
+
  
     def backward(self, gy):
         # 順伝播で保持した diff を使用
