@@ -313,7 +313,7 @@ class RBF(Function):
         self.gamma = gamma 
         self.diff = x[:, np.newaxis, :] - c[np.newaxis, :, :]
         squared_diff = np.sum(self.diff ** 2, axis=2)
-        y = np.exp(gamma * squared_diff)
+        y = np.exp(-gamma * squared_diff)
 
         # 標準化
         mean_y = y.mean(axis=1, keepdims=True)
