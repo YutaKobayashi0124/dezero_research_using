@@ -350,12 +350,12 @@ class RBF(Function):
     def forward(self, x, c, gamma):
         self.gamma = gamma
         self.diff = x[:, np.newaxis, :] - c[np.newaxis, :, :]
-        squared_diff = F.sum(self.diff ** 2, axis=2)
-        self.rbf_output = F.exp(-gamma * squared_diff)  # RBF 出力を保持
+        squared_diff = np.sum(self.diff ** 2, axis=2)  # numpyのsumを使用
+        self.rbf_output = np.exp(-gamma * squared_diff)  # RBF 出力を保持
 
         # 標準化
-        mean_y = F.mean(self.rbf_output, axis=1, keepdims=True)
-        std_y = F.std(self.rbf_output, axis=1, keepdims=True)
+        mean_y = np.mean(self.rbf_output, axis=1, keepdims=True)  # numpyのmeanを使用
+        std_y = np.std(self.rbf_output, axis=1, keepdims=True)    # numpyのstdを使用
         self.y_standardized = (self.rbf_output - mean_y) / (std_y + 1e-7)  # 分散が0にならないように小さい値を足す
         
         return self.y_standardized
@@ -366,26 +366,27 @@ class RBF(Function):
         rbf_output = self.rbf_output
 
         # 差の二乗を計算
-        squared_diff = F.sum(diff ** 2, axis=2)
+        squared_diff = np.sum(diff ** 2, axis=2)  # numpyのsumを使用
 
         # gx の計算
-        gx = -2 * self.gamma * gy[:, :, np.newaxis] * diff * rbf_output[:, :, np.newaxis]
-        gx = F.sum(gx, axis=1)
+        gx = -2 * self.gamma * gy.data[:, :, np.newaxis] * diff * rbf_output[:, :, np.newaxis]
+        gx = np.sum(gx, axis=1)  # numpyのsumを使用
 
         # gc の計算
-        gc = 2 * self.gamma * gy[:, :, np.newaxis] * diff * rbf_output[:, :, np.newaxis]
-        gc = -F.sum(gc, axis=0)
+        gc = 2 * self.gamma * gy.data[:, :, np.newaxis] * diff * rbf_output[:, :, np.newaxis]
+        gc = -np.sum(gc, axis=0)  # numpyのsumを使用
 
         # gxとgcの標準化
-        mean_gx = F.mean(gx, axis=0, keepdims=True)
-        std_gx = F.std(gx, axis=0, keepdims=True)
+        mean_gx = np.mean(gx, axis=0, keepdims=True)  # numpyのmeanを使用
+        std_gx = np.std(gx, axis=0, keepdims=True)    # numpyのstdを使用
         gx_standardized = (gx - mean_gx) / (std_gx + 1e-7)  # 分散が0にならないように小さい値を足す
 
-        mean_gc = F.mean(gc, axis=0, keepdims=True)
-        std_gc = F.std(gc, axis=0, keepdims=True)
+        mean_gc = np.mean(gc, axis=0, keepdims=True)  # numpyのmeanを使用
+        std_gc = np.std(gc, axis=0, keepdims=True)    # numpyのstdを使用
         gc_standardized = (gc - mean_gc) / (std_gc + 1e-7)  # 分散が0にならないように小さい値を足す
 
         return gx_standardized, gc_standardized
+
 
 
 def rbf(x, c, gamma):
