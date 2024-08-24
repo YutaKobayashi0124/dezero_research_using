@@ -304,34 +304,22 @@ def linear_simple(x, W, b=None):
         self.gamma = gamma 
         self.diff = x[:, np.newaxis, :] - c[np.newaxis, :, :]
         squared_diff = np.sum(self.diff ** 2, axis=2)
-        y = np.exp(gamma * squared_diff)
-
-        return y"""
-    
-class RBF(Function):
-    def forward(self, x, c, gamma):
-        self.gamma = gamma 
-        self.diff = x[:, np.newaxis, :] - c[np.newaxis, :, :]
-        squared_diff = np.sum(self.diff ** 2, axis=2)
-        y = np.exp(-gamma * squared_diff)
+        self.rbf_output = np.exp(-gamma * squared_diff)  # RBF 出力を保持
 
         # 標準化
-        mean_y = y.mean(axis=1, keepdims=True)
-        std_y = y.std(axis=1, keepdims=True)
-        y_standardized = (y - mean_y) / (std_y + 1e-7)  # 分散が0にならないように小さい値を足す
+        mean_y = self.rbf_output.mean(axis=1, keepdims=True)
+        std_y = self.rbf_output.std(axis=1, keepdims=True)
+        self.y_standardized = (self.rbf_output - mean_y) / (std_y + 1e-7)  # 分散が0にならないように小さい値を足す
+        
+        return self.y_standardized
 
-        return y_standardized
-
- 
     def backward(self, gy):
-        # 順伝播で保持した diff を使用
+        # 順伝播で保持した diff と rbf_output を使用
         diff = self.diff
+        rbf_output = self.rbf_output
 
         # 差の二乗を計算
         squared_diff = np.sum(diff ** 2, axis=2)
-
-        # RBF 出力の再計算
-        rbf_output = np.exp(-self.gamma * squared_diff)
 
         # gx の計算
         gx = -2 * self.gamma * gy.data[:, :, np.newaxis] * diff * rbf_output[:, :, np.newaxis]
@@ -341,18 +329,62 @@ class RBF(Function):
         gc = 2 * self.gamma * gy.data[:, :, np.newaxis] * diff * rbf_output[:, :, np.newaxis]
         gc = -np.sum(gc, axis=0)
 
-        # gxの標準化
+        # gxとgcの標準化
         mean_gx = gx.mean(axis=0, keepdims=True)
         std_gx = gx.std(axis=0, keepdims=True)
         gx_standardized = (gx - mean_gx) / (std_gx + 1e-7)  # 分散が0にならないように小さい値を足す
 
-        # gcの標準化
         mean_gc = gc.mean(axis=0, keepdims=True)
         std_gc = gc.std(axis=0, keepdims=True)
         gc_standardized = (gc - mean_gc) / (std_gc + 1e-7)  # 分散が0にならないように小さい値を足す
 
-        return Variable(gx_standardized), Variable(gc_standardized)
+        return Variable(gx_standardized), Variable(gc_standardized)"""
 
+class RBF(Function):
+    def __call__(self, x, c, gamma):
+        # Variable に変換し、計算を実行
+        inputs = [as_variable(x), as_variable(c), as_variable(gamma)]
+        return super().__call__(*inputs)
+    
+    def forward(self, x, c, gamma):
+        self.gamma = gamma
+        self.diff = x[:, np.newaxis, :] - c[np.newaxis, :, :]
+        squared_diff = np.sum(self.diff ** 2, axis=2)
+        self.rbf_output = np.exp(-gamma * squared_diff)  # RBF 出力を保持
+
+        # 標準化
+        mean_y = self.rbf_output.mean(axis=1, keepdims=True)
+        std_y = self.rbf_output.std(axis=1, keepdims=True)
+        self.y_standardized = (self.rbf_output - mean_y) / (std_y + 1e-7)  # 分散が0にならないように小さい値を足す
+        
+        return self.y_standardized
+
+    def backward(self, gy):
+        # 順伝播で保持した diff と rbf_output を使用
+        diff = self.diff
+        rbf_output = self.rbf_output
+
+        # 差の二乗を計算
+        squared_diff = np.sum(diff ** 2, axis=2)
+
+        # gx の計算
+        gx = -2 * self.gamma * gy[:, :, np.newaxis] * diff * rbf_output[:, :, np.newaxis]
+        gx = np.sum(gx, axis=1)
+
+        # gc の計算
+        gc = 2 * self.gamma * gy[:, :, np.newaxis] * diff * rbf_output[:, :, np.newaxis]
+        gc = -np.sum(gc, axis=0)
+
+        # gxとgcの標準化
+        mean_gx = gx.mean(axis=0, keepdims=True)
+        std_gx = gx.std(axis=0, keepdims=True)
+        gx_standardized = (gx - mean_gx) / (std_gx + 1e-7)  # 分散が0にならないように小さい値を足す
+
+        mean_gc = gc.mean(axis=0, keepdims=True)
+        std_gc = gc.std(axis=0, keepdims=True)
+        gc_standardized = (gc - mean_gc) / (std_gc + 1e-7)  # 分散が0にならないように小さい値を足す
+
+        return gx_standardized, gc_standardized
 
 
 def rbf(x, c, gamma):
