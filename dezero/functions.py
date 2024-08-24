@@ -354,8 +354,8 @@ class RBF(Function):
         self.rbf_output = F.exp(-gamma * squared_diff)  # RBF 出力を保持
 
         # 標準化
-        mean_y = self.rbf_output.mean(axis=1, keepdims=True)
-        std_y = self.rbf_output.std(axis=1, keepdims=True)
+        mean_y = F.mean(self.rbf_output, axis=1, keepdims=True)
+        std_y = F.std(self.rbf_output, axis=1, keepdims=True)
         self.y_standardized = (self.rbf_output - mean_y) / (std_y + 1e-7)  # 分散が0にならないように小さい値を足す
         
         return self.y_standardized
@@ -377,12 +377,12 @@ class RBF(Function):
         gc = -F.sum(gc, axis=0)
 
         # gxとgcの標準化
-        mean_gx = gx.mean(axis=0, keepdims=True)
-        std_gx = gx.std(axis=0, keepdims=True)
+        mean_gx = F.mean(gx, axis=0, keepdims=True)
+        std_gx = F.std(gx, axis=0, keepdims=True)
         gx_standardized = (gx - mean_gx) / (std_gx + 1e-7)  # 分散が0にならないように小さい値を足す
 
-        mean_gc = gc.mean(axis=0, keepdims=True)
-        std_gc = gc.std(axis=0, keepdims=True)
+        mean_gc = F.mean(gc, axis=0, keepdims=True)
+        std_gc = F.std(gc, axis=0, keepdims=True)
         gc_standardized = (gc - mean_gc) / (std_gc + 1e-7)  # 分散が0にならないように小さい値を足す
 
         return gx_standardized, gc_standardized
