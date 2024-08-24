@@ -2,6 +2,7 @@ import numpy as np
 import dezero
 from dezero import cuda, utils
 from dezero.core import Function, Variable, as_variable, as_array
+import dezero.functions as F
 
 
 # =============================================================================
@@ -349,8 +350,8 @@ class RBF(Function):
     def forward(self, x, c, gamma):
         self.gamma = gamma
         self.diff = x[:, np.newaxis, :] - c[np.newaxis, :, :]
-        squared_diff = np.sum(self.diff ** 2, axis=2)
-        self.rbf_output = np.exp(-gamma * squared_diff)  # RBF 出力を保持
+        squared_diff = F.sum(self.diff ** 2, axis=2)
+        self.rbf_output = F.exp(-gamma * squared_diff)  # RBF 出力を保持
 
         # 標準化
         mean_y = self.rbf_output.mean(axis=1, keepdims=True)
@@ -365,15 +366,15 @@ class RBF(Function):
         rbf_output = self.rbf_output
 
         # 差の二乗を計算
-        squared_diff = np.sum(diff ** 2, axis=2)
+        squared_diff = F.sum(diff ** 2, axis=2)
 
         # gx の計算
         gx = -2 * self.gamma * gy[:, :, np.newaxis] * diff * rbf_output[:, :, np.newaxis]
-        gx = np.sum(gx, axis=1)
+        gx = F.sum(gx, axis=1)
 
         # gc の計算
         gc = 2 * self.gamma * gy[:, :, np.newaxis] * diff * rbf_output[:, :, np.newaxis]
-        gc = -np.sum(gc, axis=0)
+        gc = -F.sum(gc, axis=0)
 
         # gxとgcの標準化
         mean_gx = gx.mean(axis=0, keepdims=True)
