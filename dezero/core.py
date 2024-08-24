@@ -105,7 +105,8 @@ class Variable:
         add_func(self.creator)
         while funcs:
             f = funcs.pop()
-            gys = [output().grad for output in f.outputs]  # output is weakref
+            gys = [output().grad.data for output in f.outputs]  # outputはweakref
+            gys = [np.array(gy) for gy in gys]  # ndarrayに変換
 
             with using_config('enable_backprop', create_graph):
                 gxs = f.backward(*gys)
@@ -114,16 +115,17 @@ class Variable:
 
                 for x, gx in zip(f.inputs, gxs):
                     if x.grad is None:
-                        x.grad = gx
+                        x.grad = Variable(gx)  # Variableとして保存
                     else:
-                        x.grad = x.grad + gx
+                        x.grad.data += gx  # ndarrayとして加算
 
                     if x.creator is not None:
                         add_func(x.creator)
 
             if not retain_grad:
                 for y in f.outputs:
-                    y().grad = None  # y is weakref
+                    y().grad = None  # yはweakref
+
 
     def unchain_backward(self):
         if self.creator is not None:
