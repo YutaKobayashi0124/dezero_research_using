@@ -369,11 +369,11 @@ class RBF(Function):
         squared_diff = np.sum(diff ** 2, axis=2)  # numpyのsumを使用
 
         # gx の計算
-        gx = -2 * self.gamma * gy.data[:, :, np.newaxis] * diff * rbf_output[:, :, np.newaxis]
+        gx = -2 * self.gamma * gy[:, :, np.newaxis] * diff * rbf_output[:, :, np.newaxis]
         gx = np.sum(gx, axis=1)  # numpyのsumを使用
 
         # gc の計算
-        gc = 2 * self.gamma * gy.data[:, :, np.newaxis] * diff * rbf_output[:, :, np.newaxis]
+        gc = 2 * self.gamma * gy[:, :, np.newaxis] * diff * rbf_output[:, :, np.newaxis]
         gc = -np.sum(gc, axis=0)  # numpyのsumを使用
 
         # gxとgcの標準化
