@@ -46,42 +46,29 @@ class MLP(Model):
         return self.layers[-1](x)
 
 #放射規定関数ネットワーク(RBFN)モデル
-"""class RBFN(Model):
-    def __init__(self, fc_output_sizes):
-        super().__init__()
-        self.layers = []
-
-        for i, out_size in enumerate(fc_output_sizes):
-            layer = L.RBF(out_size)
-            setattr(self, 'l' + str(i), layer)
-            self.layers.append(layer)
-
-    def forward(self, x):
-        for l in self.layers[:-1]:
-            x = F.identity(l(x))  # 恒等関数を適用
-
-
-        # 出力層にソフトマックス関数を適用
-        return F.softmax(self.layers[-1](x))"""
+# RBFN Model
 class RBFN(Model):
-    def __init__(self, in_size, hidden_size, out_size, centers=None, dtype=np.float32):
+    def __init__(self, in_size, hidden_sizes, out_size, centers=None, dtype=np.float32):
         super().__init__()
+        self.rbf_layers = []
+        self.fc_layers = []
+        
         # RBFレイヤーを定義
-        self.rbf = L.RBF(out_size=hidden_size, centers=centers, in_size=in_size, dtype=dtype)
-        
-        # 全結合レイヤーを定義
-        self.fc = L.Linear()
-        
-        # ソフトマックス関数を定義（出力層用）
-        self.softmax = F.softmax
+        prev_size = in_size
+        for hidden_size in hidden_sizes:
+            rbf_layer = L.RBF(out_size=hidden_size, centers=centers, in_size=prev_size, dtype=dtype)
+            self.add_link(f'rbf_{len(self.rbf_layers)}', rbf_layer)
+            self.rbf_layers.append(rbf_layer)
+            prev_size = hidden_size
 
+        # 出力層の定義
+        self.fc = L.Linear(out_size)
+        
     def forward(self, x):
-        # RBFレイヤーによる変換（中間層）
-        x = self.rbf(x)
-        # 全結合レイヤーによる変換
+        for rbf_layer in self.rbf_layers:
+            x = rbf_layer(x)
         x = self.fc(x)
-        # ソフトマックス関数による出力層の変換
-        y = self.softmax(x)
+        y = F.softmax(x)  # 出力層の活性化関数としてソフトマックスを使用
         return y
 
 # =============================================================================
