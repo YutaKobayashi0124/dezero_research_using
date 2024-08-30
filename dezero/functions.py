@@ -299,7 +299,7 @@ def linear_simple(x, W, b=None):
     t.data = None  # Release t.data (ndarray) for memory efficiency
     return y
 
-#RBF関数
+# RBF関数
 class RBF(Function):
     def __init__(self, centers, beta=1.0):
         self.centers = centers
@@ -312,7 +312,7 @@ class RBF(Function):
         # 中心との差分と距離の平方を計算
         diff = x[:, np.newaxis, :] - centers[np.newaxis, :, :]
         dist_sq = F.sum(diff ** 2, axis=2)
-        return dist_sq
+        return F.exp(-self.beta * dist_sq)  # RBF関数を適用
 
     def backward(self, gys):
         gy = gys[0]
@@ -331,6 +331,7 @@ class RBF(Function):
 
 def rbf(x, centers, beta=1.0):
     return RBF(centers, beta)(x)
+
 
 # =============================================================================
 # activation function: sigmoid / relu / softmax / log_softmax / leaky_relu
