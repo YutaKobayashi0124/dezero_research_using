@@ -118,6 +118,7 @@ class Linear(Layer):
         y = F.linear(x, self.W, self.b)
         return y
 
+# RBF Layer
 class RBF(Layer):
     def __init__(self, out_size, centers=None, dtype=np.float32, in_size=None):
         super().__init__()
