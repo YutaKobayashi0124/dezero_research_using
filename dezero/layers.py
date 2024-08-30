@@ -119,34 +119,34 @@ class Linear(Layer):
         return y
 
 class RBF(Layer):
-    def __init__(self, out_size, dtype=np.float32, in_size=None, gamma=1.0):
+    def __init__(self, out_size, centers=None, dtype=np.float32, in_size=None):
         super().__init__()
         self.in_size = in_size
         self.out_size = out_size
-        # `gamma` を `Variable` にラップし、初期値を設定
-        self.gamma = Variable(np.array(gamma, dtype=dtype))
         self.dtype = dtype
 
-        # C は重みとして使用される
-        self.C = Parameter(None, name='C')
-        if self.in_size is not None:
-            self._init_C()
+        # 基底の中心（Centers）をパラメータとして定義
+        self.centers = Parameter(None, name='centers')
 
-    def _init_C(self, xp=np):
+        if centers is not None:
+            self.centers.data = centers.astype(dtype)
+        if self.in_size is not None:
+            self._init_centers()
+
+    def _init_centers(self, xp=np):
         I, O = self.in_size, self.out_size
-        # 重み行列 C の初期化
-        C_data = xp.random.randn(O, I).astype(self.dtype) * np.sqrt(1 / I)
-        self.C.data = C_data
+        # ランダムに中心を初期化
+        centers_data = xp.random.randn(O, I).astype(self.dtype)
+        self.centers.data = centers_data
 
     def forward(self, x):
-        # C が初期化されていない場合、初期化を行う
-        if self.C.data is None:
-            self.in_size = x.shape[1]  # 入力サイズを設定
+        if self.centers.data is None:
+            self.in_size = x.shape[1]
             xp = cuda.get_array_module(x)
-            self._init_C(xp)
+            self._init_centers(xp)
 
-        # RBF の計算を行う
-        y = F.rbf(x, self.C, self.gamma) 
+        # F.rbf関数で距離の平方とRBFを計算
+        y = F.rbf(x, self.centers)
         return y
 
 
