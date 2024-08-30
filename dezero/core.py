@@ -124,7 +124,7 @@ class Variable:
             if not retain_grad:
                 for y in f.outputs:
                     y().grad = None  # y is weakref
-                    
+
     def unchain_backward(self):
         if self.creator is not None:
             funcs = [self.creator]
