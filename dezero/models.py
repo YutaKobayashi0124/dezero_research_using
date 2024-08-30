@@ -46,7 +46,7 @@ class MLP(Model):
         return self.layers[-1](x)
 
 #放射規定関数ネットワーク(RBFN)モデル
-class RBFN(Model):
+"""class RBFN(Model):
     def __init__(self, fc_output_sizes):
         super().__init__()
         self.layers = []
@@ -62,7 +62,27 @@ class RBFN(Model):
 
 
         # 出力層にソフトマックス関数を適用
-        return F.softmax(self.layers[-1](x))
+        return F.softmax(self.layers[-1](x))"""
+class RBFN(Model):
+    def __init__(self, in_size, hidden_size, out_size, centers=None, dtype=np.float32):
+        super().__init__()
+        # RBFレイヤーを定義
+        self.rbf = L.RBF(out_size=hidden_size, centers=centers, in_size=in_size, dtype=dtype)
+        
+        # 全結合レイヤーを定義
+        self.fc = L.Linear()
+        
+        # ソフトマックス関数を定義（出力層用）
+        self.softmax = F.softmax
+
+    def forward(self, x):
+        # RBFレイヤーによる変換（中間層）
+        x = self.rbf(x)
+        # 全結合レイヤーによる変換
+        x = self.fc(x)
+        # ソフトマックス関数による出力層の変換
+        y = self.softmax(x)
+        return y
 
 # =============================================================================
 # VGG
