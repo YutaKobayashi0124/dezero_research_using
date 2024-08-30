@@ -300,97 +300,37 @@ def linear_simple(x, W, b=None):
     return y
 
 #RBF関数
-"""class RBF(Function):
-    def forward(self, x, c, gamma):
-        self.gamma = gamma 
-        self.diff = x[:, np.newaxis, :] - c[np.newaxis, :, :]
-        squared_diff = np.sum(self.diff ** 2, axis=2)
-        self.rbf_output = np.exp(-gamma * squared_diff)  # RBF 出力を保持
-
-        # 標準化
-        mean_y = self.rbf_output.mean(axis=1, keepdims=True)
-        std_y = self.rbf_output.std(axis=1, keepdims=True)
-        self.y_standardized = (self.rbf_output - mean_y) / (std_y + 1e-7)  # 分散が0にならないように小さい値を足す
-        
-        return self.y_standardized
-
-    def backward(self, gy):
-        # 順伝播で保持した diff と rbf_output を使用
-        diff = self.diff
-        rbf_output = self.rbf_output
-
-        # 差の二乗を計算
-        squared_diff = np.sum(diff ** 2, axis=2)
-
-        # gx の計算
-        gx = -2 * self.gamma * gy.data[:, :, np.newaxis] * diff * rbf_output[:, :, np.newaxis]
-        gx = np.sum(gx, axis=1)
-
-        # gc の計算
-        gc = 2 * self.gamma * gy.data[:, :, np.newaxis] * diff * rbf_output[:, :, np.newaxis]
-        gc = -np.sum(gc, axis=0)
-
-        # gxとgcの標準化
-        mean_gx = gx.mean(axis=0, keepdims=True)
-        std_gx = gx.std(axis=0, keepdims=True)
-        gx_standardized = (gx - mean_gx) / (std_gx + 1e-7)  # 分散が0にならないように小さい値を足す
-
-        mean_gc = gc.mean(axis=0, keepdims=True)
-        std_gc = gc.std(axis=0, keepdims=True)
-        gc_standardized = (gc - mean_gc) / (std_gc + 1e-7)  # 分散が0にならないように小さい値を足す
-
-        return Variable(gx_standardized), Variable(gc_standardized)"""
-
 class RBF(Function):
-    def __call__(self, x, c, gamma):
-        # Variable に変換し、計算を実行
-        inputs = [as_variable(x), as_variable(c), as_variable(gamma)]
-        return super().__call__(*inputs)
-    
-    def forward(self, x, c, gamma):
-        self.gamma = gamma
-        self.diff = x[:, np.newaxis, :] - c[np.newaxis, :, :]
-        squared_diff = np.sum(self.diff ** 2, axis=2)  # numpyのsumを使用
-        self.rbf_output = np.exp(-gamma * squared_diff)  # RBF 出力を保持
+    def __init__(self, centers, beta=1.0):
+        self.centers = centers
+        self.beta = beta
 
-        # 標準化
-        mean_y = np.mean(self.rbf_output, axis=1, keepdims=True)  # numpyのmeanを使用
-        std_y = np.std(self.rbf_output, axis=1, keepdims=True)    # numpyのstdを使用
-        self.y_standardized = (self.rbf_output - mean_y) / (std_y + 1e-7)  # 分散が0にならないように小さい値を足す
-        
-        return self.y_standardized
+    def forward(self, x):
+        x = as_variable(x)
+        centers = as_variable(self.centers)
 
-    def backward(self, gy):
-        # 順伝播で保持した diff と rbf_output を使用
-        diff = self.diff
-        rbf_output = self.rbf_output
+        # 中心との差分と距離の平方を計算
+        diff = x[:, np.newaxis, :] - centers[np.newaxis, :, :]
+        dist_sq = F.sum(diff ** 2, axis=2)
+        return dist_sq
 
-        # 差の二乗を計算
-        squared_diff = np.sum(diff ** 2, axis=2)  # numpyのsumを使用
+    def backward(self, gys):
+        gy = gys[0]
+        x, centers = self.inputs
 
-        # gx の計算
-        gx = -2 * self.gamma * gy[:, :, np.newaxis] * diff * rbf_output[:, :, np.newaxis]
-        gx = np.sum(gx, axis=1)  # numpyのsumを使用
+        # 前方計算で使用した差分と距離の平方
+        diff = x.data[:, np.newaxis, :] - centers.data[np.newaxis, :, :]
+        dist_sq = np.sum(diff ** 2, axis=2)
 
-        # gc の計算
-        gc = 2 * self.gamma * gy[:, :, np.newaxis] * diff * rbf_output[:, :, np.newaxis]
-        gc = -np.sum(gc, axis=0)  # numpyのsumを使用
+        # RBFの勾配の計算
+        exp_term = np.exp(-self.beta * dist_sq)
+        coeff = -2 * self.beta * gy.data * exp_term
+        gx = np.sum(coeff[:, :, np.newaxis] * diff, axis=1)
+        gcenters = -np.sum(coeff[:, :, np.newaxis] * diff, axis=0)
+        return Variable(gx), Variable(gcenters)
 
-        # gxとgcの標準化
-        mean_gx = np.mean(gx, axis=0, keepdims=True)  # numpyのmeanを使用
-        std_gx = np.std(gx, axis=0, keepdims=True)    # numpyのstdを使用
-        gx_standardized = (gx - mean_gx) / (std_gx + 1e-7)  # 分散が0にならないように小さい値を足す
-
-        mean_gc = np.mean(gc, axis=0, keepdims=True)  # numpyのmeanを使用
-        std_gc = np.std(gc, axis=0, keepdims=True)    # numpyのstdを使用
-        gc_standardized = (gc - mean_gc) / (std_gc + 1e-7)  # 分散が0にならないように小さい値を足す
-
-        return gx_standardized, gc_standardized
-
-
-
-def rbf(x, c, gamma):
-    return RBF()(x, c, gamma)
+def rbf(x, centers, beta=1.0):
+    return RBF(centers, beta)(x)
 
 # =============================================================================
 # activation function: sigmoid / relu / softmax / log_softmax / leaky_relu
