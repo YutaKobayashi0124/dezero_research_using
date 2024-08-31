@@ -306,28 +306,28 @@ class RBF(Function):
         self.beta = beta
 
     def forward(self, x):
-        x = as_variable(x)
-        centers = as_variable(self.centers)
+        centers = self.centers  # ndarrayのまま使用
 
         # 中心との差分と距離の平方を計算
         diff = x[:, np.newaxis, :] - centers[np.newaxis, :, :]
-        dist_sq = F.sum(diff ** 2, axis=2)
-        return dist_sq
+        dist_sq = np.sum(diff ** 2, axis=2)
+        rbf = np.exp(-self.beta * dist_sq)
+        return rbf
 
     def backward(self, gys):
         gy = gys[0]
         x, centers = self.inputs
 
         # 前方計算で使用した差分と距離の平方
-        diff = x.data[:, np.newaxis, :] - centers.data[np.newaxis, :, :]
+        diff = x[:, np.newaxis, :] - centers[np.newaxis, :, :]
         dist_sq = np.sum(diff ** 2, axis=2)
 
         # RBFの勾配の計算
         exp_term = np.exp(-self.beta * dist_sq)
-        coeff = -2 * self.beta * gy.data * exp_term
+        coeff = -2 * self.beta * gy * exp_term
         gx = np.sum(coeff[:, :, np.newaxis] * diff, axis=1)
         gcenters = -np.sum(coeff[:, :, np.newaxis] * diff, axis=0)
-        return Variable(gx), Variable(gcenters)
+        return gx, gcenters
 
 def rbf(x, centers, beta=1.0):
     return RBF(centers, beta)(x)
