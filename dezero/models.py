@@ -48,28 +48,23 @@ class MLP(Model):
 #放射規定関数ネットワーク(RBFN)モデル
 # RBFN Model
 class RBFN(Model):
-    def __init__(self, in_size, hidden_sizes, out_size, centers=None, dtype=np.float32):
+    def __init__(self, rbf_output_sizes):
         super().__init__()
-        self.rbf_layers = []
-        self.fc_layers = []
-        
-        # RBFレイヤーを定義
-        prev_size = in_size
-        for hidden_size in hidden_sizes:
-            rbf_layer = L.RBF(out_size=hidden_size, centers=centers, in_size=prev_size, dtype=dtype)
-            self.add_link(f'rbf_{len(self.rbf_layers)}', rbf_layer)
-            self.rbf_layers.append(rbf_layer)
-            prev_size = hidden_size
+        self.layers = []
 
-        # 出力層の定義
-        self.fc = L.Linear(out_size)
-        
+        for i, out_size in enumerate(rbf_output_sizes):
+            layer = L.RBF(out_size)
+            setattr(self, 'l' + str(i), layer)
+            self.layers.append(layer)
+
     def forward(self, x):
-        for rbf_layer in self.rbf_layers:
-            x = rbf_layer(x)
-        x = self.fc(x)
-        y = F.softmax(x)  # 出力層の活性化関数としてソフトマックスを使用
-        return y
+        for l in self.layers[:-1]:
+            # 中間層の活性化関数は恒等関数 (Identity function)
+            x = F.identity(l(x))  # 恒等関数を適用
+            
+        # 出力層にソフトマックス関数を適用
+        return F.softmax(self.layers[-1](x))
+
 
 # =============================================================================
 # VGG
