@@ -310,10 +310,11 @@ class RBF(Function):
 
         # 中心との差分と距離の平方を計算
         diff = x[:, np.newaxis, :] - centers[np.newaxis, :, :]
-        dist_sq = F.sum(diff.data ** 2, axis=2)
+        print(diff.shape)
+        dist_sq = np.sum(diff.data ** 2, axis=2)
         #dist_sq = np.sum(diff ** 2, axis=2)
         #dist_sq = (diff ** 2).sum(axis=2)
-        rbf = F.exp(-self.beta * dist_sq)
+        rbf = np.exp(-self.beta * dist_sq)
         return rbf
 
     def backward(self, gys):
