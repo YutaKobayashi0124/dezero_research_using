@@ -141,7 +141,7 @@ class RBF(Layer):
         self.c.data = c_data
 
     def forward(self, x):
-        if self.centers.data is None:
+        if self.c.data is None:
             self.in_size = x.shape[1]
             self._init_centers()
 
