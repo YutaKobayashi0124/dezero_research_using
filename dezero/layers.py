@@ -143,7 +143,7 @@ class RBF(Layer):
     def forward(self, x):
         if self.c.data is None:
             self.in_size = x.shape[1]
-            self._init_centers()
+            self._init_c()
 
         # F.rbf関数で距離の平方とRBFを計算
         y = F.rbf(x, self.c)
