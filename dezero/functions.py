@@ -300,11 +300,11 @@ def linear_simple(x, W, b=None):
     return y
 
 class RBF(Function):
-    def __init__(self, centers, beta=1.0):
-        self.centers = centers
+    def __init__(self, beta=1.0):
         self.beta = beta
 
-    def forward(self, x):
+    def forward(self, x, centers):
+        self.centers = centers
         centers = self.centers.data
         diff = x[:, np.newaxis, :] - centers[np.newaxis, :, :]
         dist_sq = (diff ** 2).sum(axis=2)
@@ -322,7 +322,7 @@ class RBF(Function):
         return gx, gcenters
 
 def rbf(x, centers, beta=1.0):
-    return RBF(centers, beta)(x)
+    return RBF(beta)(x,centers)
 
 
 
