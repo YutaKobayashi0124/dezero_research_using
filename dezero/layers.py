@@ -127,18 +127,18 @@ class RBF(Layer):
         self.dtype = dtype
 
         # 基底の中心（Centers）をパラメータとして定義
-        self.centers = Parameter(None, name='centers')
+        self.c = Parameter(None, name='c')
 
         if centers is not None:
-            self.centers.data = centers.astype(dtype)
+            self.c.data = centers.astype(dtype)
         if self.in_size is not None:
-            self._init_centers()
+            self._init_c()
 
-    def _init_centers(self, xp=np):
+    def _init_c(self, xp=np):
         I, O = self.in_size, self.out_size
         # ランダムに中心を初期化
-        centers_data = xp.random.randn(O, I).astype(self.dtype)
-        self.centers.data = centers_data
+        c_data = xp.random.randn(O, I).astype(self.dtype)
+        self.c.data = c_data
 
     def forward(self, x):
         if self.centers.data is None:
@@ -146,7 +146,7 @@ class RBF(Layer):
             self._init_centers()
 
         # F.rbf関数で距離の平方とRBFを計算
-        y = F.rbf(x, self.centers)
+        y = F.rbf(x, self.c)
         return y
 
 
