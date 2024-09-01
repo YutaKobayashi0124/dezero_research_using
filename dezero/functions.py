@@ -301,7 +301,7 @@ def linear_simple(x, W, b=None):
 
 # RBF関数
 class RBF(Function):
-    def __init__(self, centers, beta=1.0):
+    def __init__(self, centers, beta):
         self.centers = centers
         self.beta = beta
 
@@ -310,7 +310,8 @@ class RBF(Function):
 
         # 中心との差分と距離の平方を計算
         diff = x[:, np.newaxis, :] - centers[np.newaxis, :, :]
-        dist_sq = np.sum(diff ** 2, axis=2)
+        #dist_sq = np.sum(diff ** 2, axis=2)
+        dist_sq = (diff ** 2).sum(axis=2)
         rbf = np.exp(-self.beta * dist_sq)
         return rbf
 
