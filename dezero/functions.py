@@ -299,41 +299,31 @@ def linear_simple(x, W, b=None):
     t.data = None  # Release t.data (ndarray) for memory efficiency
     return y
 
-# RBF関数
 class RBF(Function):
-    def __init__(self, centers, beta):
+    def __init__(self, centers, beta=1.0):
         self.centers = centers
         self.beta = beta
 
     def forward(self, x):
-        centers = self.centers  # ndarrayのまま使用
-
-        # 中心との差分と距離の平方を計算
+        centers = self.centers.data
         diff = x[:, np.newaxis, :] - centers[np.newaxis, :, :]
-        print(diff.shape)
-        dist_sq = np.sum(diff.data ** 2, axis=2)
-        #dist_sq = np.sum(diff ** 2, axis=2)
-        #dist_sq = (diff ** 2).sum(axis=2)
-        rbf = np.exp(-self.beta * dist_sq)
-        return rbf
+        dist_sq = (diff ** 2).sum(axis=2)
+        y = np.exp(-self.beta * dist_sq)
+        return y
 
-    def backward(self, gys):
-        gy = gys[0]
+    def backward(self, gy):
         x, centers = self.inputs
+        diff = x.data[:, np.newaxis, :] - centers.data[np.newaxis, :, :]
+        dist_sq = (diff ** 2).sum(axis=2)
+        y = np.exp(-self.beta * dist_sq)
 
-        # 前方計算で使用した差分と距離の平方
-        diff = x[:, np.newaxis, :] - centers[np.newaxis, :, :]
-        dist_sq = np.sum(diff ** 2, axis=2)
-
-        # RBFの勾配の計算
-        exp_term = np.exp(-self.beta * dist_sq)
-        coeff = -2 * self.beta * gy * exp_term
-        gx = np.sum(coeff[:, :, np.newaxis] * diff, axis=1)
-        gcenters = -np.sum(coeff[:, :, np.newaxis] * diff, axis=0)
+        gx = -2 * self.beta * np.sum(gy[:, :, np.newaxis] * diff * y[:, :, np.newaxis], axis=1)
+        gcenters = 2 * self.beta * np.sum(gy[:, :, np.newaxis] * diff * y[:, :, np.newaxis], axis=0)
         return gx, gcenters
 
 def rbf(x, centers, beta=1.0):
     return RBF(centers, beta)(x)
+
 
 
 # =============================================================================
