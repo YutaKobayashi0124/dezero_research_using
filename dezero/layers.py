@@ -129,8 +129,8 @@ class RBF(Layer):
         # 基底の中心（Centers）をパラメータとして定義
         self.c = Parameter(None, name='c')
 
-        if centers is not None:
-            self.c.data = centers.astype(dtype)
+        """if centers is not None:
+            self.c.data = centers.astype(dtype)"""
         if self.in_size is not None:
             self._init_c()
 
