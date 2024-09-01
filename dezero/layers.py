@@ -146,7 +146,7 @@ class RBF(Layer):
             self._init_centers()
 
         # F.rbf関数で距離の平方とRBFを計算
-        y = F.rbf(x, self.centers.data)
+        y = F.rbf(x, self.centers)
         return y
 
 
