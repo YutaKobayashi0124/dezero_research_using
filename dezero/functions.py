@@ -305,8 +305,7 @@ class RBF(Function):
 
     def forward(self, x, centers):
         self.centers = centers
-        centers = self.centers.data
-        diff = x[:, np.newaxis, :] - centers[np.newaxis, :, :]
+        diff = x[:, np.newaxis, :] - self.centers[np.newaxis, :, :]
         dist_sq = (diff ** 2).sum(axis=2)
         y = np.exp(-self.beta * dist_sq)
         return y
