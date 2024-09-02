@@ -195,8 +195,7 @@ class Sum(Function):
         return y
 
     def backward(self, gy):
-        gy = utils.reshape_sum_backward(gy, self.x_shape, self.axis,
-                                        self.keepdims)
+        gy = utils.reshape_sum_backward(gy, self.x_shape, self.axis,self.keepdims)
         gx = broadcast_to(gy, self.x_shape)
         return gx
 
@@ -310,15 +309,28 @@ class RBF(Function):
         y = np.exp(-self.beta * dist_sq)
         return y
 
-    def backward(self, gy):
+    """def backward(self, gy):
         x, c = self.inputs
         diff = x.data[:, np.newaxis, :] - c.data[np.newaxis, :, :]
         dist_sq = (diff ** 2).sum(axis=2)
         y = np.exp(-self.beta * dist_sq)
 
-        gx = -2 * self.beta * (gy[:, :, np.newaxis] * diff * y[:, :, np.newaxis]).sum( axis=1)
+        gx = -2 * self.beta * (gy[:, :, np.newaxis] * diff * y[:, :, np.newaxis]).sum(axis=1)
         gc = 2 * self.beta * (gy[:, :, np.newaxis] * diff * y[:, :, np.newaxis]).sum(axis=0)
+        return gx, gc"""
+    def backward(self, gy):
+        dist_sq = np.sum((self.x - self.c) ** 2, axis=1)
+        y = np.exp(-self.beta * dist_sq)
+
+        # 中間結果を計算
+        temp = gy[:, :, np.newaxis] * diff * y[:, :, np.newaxis]
+    
+         # 勾配の計算
+        gx = -2 * self.beta * temp.sum(axis=1)
+        gc = 2 * self.beta * temp.sum(axis=0)
+
         return gx, gc
+
 
 def rbf(x, centers, beta=1.0):
     return RBF(beta)(x,centers)
