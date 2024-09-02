@@ -317,7 +317,9 @@ class RBF(Function):
         y = np.exp(-self.beta * dist_sq)
 
         # エラーメッセージが発生する直前に型を確認するためのprint文を追加
-        print(type(gy), type(diff), type(y))
+        print(type(gy), type(diff), type(y), flush=True)
+        print(gy, diff, y, flush=True)
+
         gx = -2 * self.beta * np.sum(gy[:, :, np.newaxis] * diff * y[:, :, np.newaxis], axis=1)
         gc = 2 * self.beta * np.sum(gy[:, :, np.newaxis] * diff * y[:, :, np.newaxis], axis=0)
         return gx, gc
