@@ -319,7 +319,9 @@ class RBF(Function):
         gc = 2 * self.beta * (gy[:, :, np.newaxis] * diff * y[:, :, np.newaxis]).sum(axis=0)
         return gx, gc"""
     def backward(self, gy):
-        dist_sq = np.sum((self.x - self.c) ** 2, axis=1)
+        x, c = self.inputs
+        diff = x.data[:, np.newaxis, :] - c.data[np.newaxis, :, :]
+        dist_sq = (diff ** 2).sum(axis=2)
         y = np.exp(-self.beta * dist_sq)
 
         # 中間結果を計算
