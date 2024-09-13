@@ -17,6 +17,10 @@ class Optimizer:
     def update(self):
         params = [p for p in self.target.params() if p.grad is not None]
 
+        mean = params.grad.data.mean(axis=0, keepdims=True)
+        std = params.grad.data.std(axis=0, keepdims=True)
+        params.grad.data = (params.grad.data - mean) / (std + 1e-7)  # ゼロ割りを防ぐために小さな値を足す
+
         for f in self.hooks:
             f(params)
 
