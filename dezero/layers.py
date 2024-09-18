@@ -149,9 +149,9 @@ class RBF(Layer):
         # F.rbf関数で距離の平方とRBFを計算
         y = F.rbf(x, self.C)
 
-        mean = y.data.mean(axis=0, keepdims=True)
-        std = y.data.std(axis=0, keepdims=True)
-        y.data = (y.data - mean) / (std + 1e-7)  # ゼロ割りを防ぐために小さな値を足す
+        #mean = y.data.mean(axis=0, keepdims=True)
+        #std = y.data.std(axis=0, keepdims=True)
+        #y.data = (y.data - mean) / (std + 1e-7)  # ゼロ割りを防ぐために小さな値を足す
 
         return y
 
