@@ -302,25 +302,16 @@ class RBF(Function):
     def __init__(self, beta=1.0):
         self.beta = beta
 
-    def forward(self, x, c):
-        self.c = c
-        diff = x[:, np.newaxis, :] - self.c[np.newaxis, :, :]
+    def forward(self, x, C):
+        self.C = C
+        diff = x[:, np.newaxis, :] - self.C[np.newaxis, :, :]
         dist_sq = (diff ** 2).sum(axis=2)
         y = np.exp(-self.beta * dist_sq)
         return y
 
-    """def backward(self, gy):
-        x, c = self.inputs
-        diff = x.data[:, np.newaxis, :] - c.data[np.newaxis, :, :]
-        dist_sq = (diff ** 2).sum(axis=2)
-        y = np.exp(-self.beta * dist_sq)
-
-        gx = -2 * self.beta * (gy[:, :, np.newaxis] * diff * y[:, :, np.newaxis]).sum(axis=1)
-        gc = 2 * self.beta * (gy[:, :, np.newaxis] * diff * y[:, :, np.newaxis]).sum(axis=0)
-        return gx, gc"""
     def backward(self, gy):
-        x, c = self.inputs
-        diff = x.data[:, np.newaxis, :] - c.data[np.newaxis, :, :]
+        x, C = self.inputs
+        diff = x.data[:, np.newaxis, :] - C.data[np.newaxis, :, :]
         dist_sq = (diff ** 2).sum(axis=2)
         y = np.exp(-self.beta * dist_sq)
 
