@@ -143,7 +143,8 @@ class RBF(Layer):
     def forward(self, x):
         if self.C.data is None:
             self.in_size = x.shape[1]
-            self._init_C()
+            xp = cuda.get_array_module(x)
+            self._init_C(xp)
 
         # F.rbf関数で距離の平方とRBFを計算
         y = F.rbf(x, self.C)
