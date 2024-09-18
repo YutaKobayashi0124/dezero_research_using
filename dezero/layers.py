@@ -134,7 +134,7 @@ class RBF(Layer):
         if self.in_size is not None:
             self._init_C()
 
-    def _init_c(self, xp=np):
+    def _init_C(self, xp=np):
         I, O = self.in_size, self.out_size
         # ランダムに中心を初期化
         C_data = xp.random.randn(O, I).astype(self.dtype)
