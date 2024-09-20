@@ -314,7 +314,8 @@ class RBF(Function):
         diff = x.data[:, np.newaxis, :] - C.data[np.newaxis, :, :]
         dist_sq = (diff ** 2).sum(axis=2)
         y = np.exp(-self.beta * dist_sq)"""
-        y = self.outputs
+        # 順伝播の結果を self.outputs から取得
+        y = self.outputs[0]()  # weakref で保存された出力を取得
 
         # 中間結果を計算
         temp = gy[:, :, np.newaxis] * self.diff * y[:, :, np.newaxis]
