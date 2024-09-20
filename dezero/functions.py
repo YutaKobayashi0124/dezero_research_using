@@ -303,20 +303,21 @@ class RBF(Function):
         self.beta = beta
 
     def forward(self, x, C):
-        self.C = C
-        diff = x[:, np.newaxis, :] - self.C[np.newaxis, :, :]
+        diff = x[:, np.newaxis, :] - C[np.newaxis, :, :]
+        self.diff = diff
         dist_sq = (diff ** 2).sum(axis=2)
         y = np.exp(-self.beta * dist_sq)
         return y
 
     def backward(self, gy):
-        x, C = self.inputs
+        """x, C = self.inputs
         diff = x.data[:, np.newaxis, :] - C.data[np.newaxis, :, :]
         dist_sq = (diff ** 2).sum(axis=2)
-        y = np.exp(-self.beta * dist_sq)
+        y = np.exp(-self.beta * dist_sq)"""
+        y = self.outputs
 
         # 中間結果を計算
-        temp = gy[:, :, np.newaxis] * diff * y[:, :, np.newaxis]
+        temp = gy[:, :, np.newaxis] * self.diff * y[:, :, np.newaxis]
     
          # 勾配の計算
         gx = -2 * self.beta * temp.sum(axis=1)
