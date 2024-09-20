@@ -304,9 +304,14 @@ class RBF(Function):
 
     def forward(self, x, C):
         self.C = C
-        diff = x[:, np.newaxis, :] - self.C[np.newaxis, :, :]
+        diff = x[:, np.newaxis, :] - C[np.newaxis, :, :]
         dist_sq = (diff ** 2).sum(axis=2)
         y = np.exp(-self.beta * dist_sq)
+
+        mean = y.mean(axis=0, keepdims=True)
+        std = y.std(axis=0, keepdims=True)
+        y = (y - mean) / (std + 1e-7)  # ゼロ割りを防ぐために小さな値を足す
+
         return y
 
     def backward(self, gy):
