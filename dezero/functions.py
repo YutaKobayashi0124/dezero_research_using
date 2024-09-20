@@ -305,6 +305,7 @@ class RBF(Function):
     def forward(self, x, C):
         self.C = C
         diff = x[:, np.newaxis, :] - C[np.newaxis, :, :]
+        self.diff = diff
         dist_sq = (diff ** 2).sum(axis=2)
         y = np.exp(-self.beta * dist_sq)
 
@@ -315,13 +316,30 @@ class RBF(Function):
         return y
 
     def backward(self, gy):
-        x, C = self.inputs
+     """x, C = self.inputs
         diff = x.data[:, np.newaxis, :] - C.data[np.newaxis, :, :]
         dist_sq = (diff ** 2).sum(axis=2)
         y = np.exp(-self.beta * dist_sq)
 
         # 中間結果を計算
         temp = gy[:, :, np.newaxis] * diff * y[:, :, np.newaxis]
+    
+         # 勾配の計算
+        gx = -2 * self.beta * temp.sum(axis=1)
+        gc = 2 * self.beta * temp.sum(axis=0)
+
+        return gx, gc"""
+     
+     def backward(self, gy):
+        """x, C = self.inputs
+        diff = x.data[:, np.newaxis, :] - C.data[np.newaxis, :, :]
+        dist_sq = (diff ** 2).sum(axis=2)
+        y = np.exp(-self.beta * dist_sq)"""
+        # 順伝播の結果を self.outputs から取得
+        y = self.outputs[0]()  # weakref で保存された出力を取得
+
+        # 中間結果を計算
+        temp = gy[:, :, np.newaxis] * self.diff * y[:, :, np.newaxis]
     
          # 勾配の計算
         gx = -2 * self.beta * temp.sum(axis=1)
