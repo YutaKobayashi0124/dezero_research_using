@@ -309,8 +309,8 @@ class RBF(Function):
         dist_sq = (diff ** 2).sum(axis=2)
         y = np.exp(-self.beta * dist_sq)
 
-        mean = y.mean(axis=0, keepdims=True)
-        std = y.std(axis=0, keepdims=True)
+        mean = y.mean(axis=1, keepdims=True)
+        std = y.std(axis=1, keepdims=True)
         y = (y - mean) / (std + 1e-7)  # ゼロ割りを防ぐために小さな値を足す
 
         return y
@@ -344,6 +344,20 @@ class RBF(Function):
          # 勾配の計算
         gx = -2 * self.beta * temp.sum(axis=1)
         gc = 2 * self.beta * temp.sum(axis=0)
+
+　　　   #gxの列成分の合計とgcの全要素の合計を計算
+        """GX = gx.sum(axis=1, keepdims=True)
+        GC = gc.flatten()
+        GC = GC.sum(axis=0, keepdims=True)"""
+
+        GX = gx.reshape(-1)
+        GC = gc.reshape(-1)
+        result = np.append(GX, GC)
+        result_ave = result.mean(axis=0, keepdims=True)
+        result_std = result.std(axis=0, keepdims=True)
+        
+        gx = (gx - result_ave) / (result_std + 1e-7)  # ゼロ割りを防ぐために小さな値を足す
+        gc = (gc - result_ave) / (result_std + 1e-7)  # ゼロ割りを防ぐために小さな値を足す
 
         return gx, gc
 
