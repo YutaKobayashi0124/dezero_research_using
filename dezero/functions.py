@@ -346,7 +346,7 @@ class RBF(Function):
         gc = 2 * self.beta * temp.sum(axis=0)
 
          # gxとgcの標準化
-        GX = gx.reshape(-1)
+        """GX = gx.reshape(-1)
         GC = gc.reshape(-1)
 
         result = np.append(GX, GC)
@@ -354,7 +354,19 @@ class RBF(Function):
         result_std = result.std(axis=0, keepdims=True)
         
         gx = (gx - result_ave) / (result_std + 1e-7)  # ゼロ割りを防ぐために小さな値を足す
-        gc = (gc - result_ave) / (result_std + 1e-7)  # ゼロ割りを防ぐために小さな値を足す
+        gc = (gc - result_ave) / (result_std + 1e-7)  # ゼロ割りを防ぐために小さな値を足す"""
+
+        GX = gx.reshape(-1)
+        GC = gc.reshape(-1)
+
+        result_gx_ave = GX.mean(axis=0, keepdims=True)
+        result_gx__std = GX.std(axis=0, keepdims=True)
+
+        result_gc_ave = GC.mean(axis=0, keepdims=True)
+        result_gc__std = GC.std(axis=0, keepdims=True)
+
+        gx = (gx - result_gx_ave) / (result_gx__std + 1e-8)  # ゼロ割りを防ぐために小さな値を足す
+        gc = (gc - result_gc_ave) / (result_gc__std + 1e-8)  # ゼロ割りを防ぐために小さな値を足す
 
         return gx, gc
 
