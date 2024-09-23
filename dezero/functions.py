@@ -345,13 +345,10 @@ class RBF(Function):
         gx = -2 * self.beta * temp.sum(axis=1)
         gc = 2 * self.beta * temp.sum(axis=0)
 
-　　　   #gxの列成分の合計とgcの全要素の合計を計算
-        """GX = gx.sum(axis=1, keepdims=True)
-        GC = gc.flatten()
-        GC = GC.sum(axis=0, keepdims=True)"""
-
+         # gxとgcの標準化
         GX = gx.reshape(-1)
         GC = gc.reshape(-1)
+
         result = np.append(GX, GC)
         result_ave = result.mean(axis=0, keepdims=True)
         result_std = result.std(axis=0, keepdims=True)
