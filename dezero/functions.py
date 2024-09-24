@@ -356,7 +356,7 @@ class RBF(Function):
         gx = (gx - result_ave) / (result_std + 1e-7)  # ゼロ割りを防ぐために小さな値を足す
         gc = (gc - result_ave) / (result_std + 1e-7)  # ゼロ割りを防ぐために小さな値を足す"""
 
-        GX = gx.reshape(-1)
+        """GX = gx.reshape(-1)
         GC = gc.reshape(-1)
 
         result_gx_ave = GX.mean(axis=0, keepdims=True)
@@ -364,6 +364,15 @@ class RBF(Function):
 
         result_gc_ave = GC.mean(axis=0, keepdims=True)
         result_gc__std = GC.std(axis=0, keepdims=True)
+
+        gx = (gx - result_gx_ave) / (result_gx__std + 1e-8)  # ゼロ割りを防ぐために小さな値を足す
+        gc = (gc - result_gc_ave) / (result_gc__std + 1e-8)  # ゼロ割りを防ぐために小さな値を足す"""
+
+        result_gx_ave = gx.mean(axis=1, keepdims=True)
+        result_gx__std = gx.std(axis=1, keepdims=True)
+
+        result_gc_ave = gc.mean(axis=0, keepdims=True)
+        result_gc__std = gc.std(axis=0, keepdims=True)
 
         gx = (gx - result_gx_ave) / (result_gx__std + 1e-8)  # ゼロ割りを防ぐために小さな値を足す
         gc = (gc - result_gc_ave) / (result_gc__std + 1e-8)  # ゼロ割りを防ぐために小さな値を足す
