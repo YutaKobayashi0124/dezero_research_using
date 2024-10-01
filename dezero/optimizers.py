@@ -21,9 +21,14 @@ class Optimizer:
         for f in self.hooks:
             f(params)
 
-        # パラメータの値を記録
+        """# パラメータの値を記録
         current_params = {f"param_{i}": p.data.copy() for i, p in enumerate(params)}
-        self.params_log.append(current_params)  # パラメータの値をログに保存
+        self.params_log.append(current_params)  # パラメータの値をログに保存"""
+
+        # 現在のパラメータのコピーをリストに保存
+        self.params_log.append([p.data.copy() for p in params])
+
+        """self.params_log.append(params)"""
 
         for param in params:
             self.update_one(param)
