@@ -24,9 +24,9 @@ class Optimizer:
         """# パラメータの値を記録
         current_params = {f"param_{i}": p.data.copy() for i, p in enumerate(params)}
         self.params_log.append(current_params)  # パラメータの値をログに保存"""
-
-        # 現在のパラメータのコピーをリストに保存
-        self.params_log.append([p.data.copy() for p in params])
+        
+        # 現在のパラメータのデータ部分だけをリストに保存
+        self.params_log.extend([p.data.copy() for p in params])  # dataアトリビュートのみを記録
 
         """self.params_log.append(params)"""
 
