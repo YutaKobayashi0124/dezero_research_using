@@ -307,6 +307,10 @@ class RBF(Function):
         self.diff = diff
         dist_sq = (diff ** 2).sum(axis=2)
         y = np.exp(-self.beta * dist_sq)
+
+        mean = y.mean(axis=1, keepdims=True)
+        std = y.std(axis=1, keepdims=True)
+        y = (y - mean) / (std + 1e-7)  # ゼロ割りを防ぐために小さな値を足す
         return y
 
     def backward(self, gy):
