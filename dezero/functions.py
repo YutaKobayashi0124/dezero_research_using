@@ -329,17 +329,21 @@ class RBF(Function):
         gc = 2 * self.beta * temp.sum(axis=0)
 
         # 勾配の標準化
-        gx_mean = gx.mean()
-        gx_std = gx.std()
-        if gx_std != 0:
-            gx = (gx - gx_mean) / (gx_std + 1e-7)  # ゼロ割り防止のための微小値を追加
+         # gxとgcをフラット化して結合
+        combined_grads = np.concatenate((gx.flatten(), gc.flatten()))
 
-        gc_mean = gc.mean()
-        gc_std = gc.std()
-        if gc_std != 0:
-            gc = (gc - gc_mean) / (gc_std + 1e-7)  # ゼロ割り防止のための微小値を追加
+        # 結合された勾配の平均と標準偏差を計算
+        combined_mean = combined_grads.mean()
+        combined_std = combined_grads.std()
 
-        return gx, gc
+        # 勾配の標準化
+        normalized_grads = (combined_grads - combined_mean) / (combined_std + 1e-8)
+
+        # 標準化された勾配を元の形状に戻す
+        gx_normalized = normalized_grads[:gx.size].reshape(gx.shape)
+        gc_normalized = normalized_grads[gx.size:].reshape(gc.shape)
+
+        return gx_normalized, gc_normalized
 
 
 def rbf(x, centers, beta=1.0):
