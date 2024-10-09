@@ -328,6 +328,17 @@ class RBF(Function):
         gx = -2 * self.beta * temp.sum(axis=1)
         gc = 2 * self.beta * temp.sum(axis=0)
 
+        # 勾配の標準化
+        gx_mean = gx.mean()
+        gx_std = gx.std()
+        if gx_std != 0:
+            gx = (gx - gx_mean) / (gx_std + 1e-7)  # ゼロ割り防止のための微小値を追加
+
+        gc_mean = gc.mean()
+        gc_std = gc.std()
+        if gc_std != 0:
+            gc = (gc - gc_mean) / (gc_std + 1e-7)  # ゼロ割り防止のための微小値を追加
+
         return gx, gc
 
 
