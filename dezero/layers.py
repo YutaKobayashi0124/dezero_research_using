@@ -140,6 +140,12 @@ class RBF(Layer):
         C_data = xp.random.randn(O, I).astype(self.dtype)
         self.C.data = C_data
 
+    def _init_W(self, xp=np):
+        O = self.out_size
+        #ランダムに重みを初期化
+        W_data = xp.random.randn(O).astype(self.dtype)
+        self.W.data = W_data
+
     def forward(self, x):
         if self.C.data is None:
             self.in_size = x.shape[1]
@@ -148,6 +154,8 @@ class RBF(Layer):
 
         # F.rbf関数で距離の平方とRBFを計算
         y = F.rbf(x, self.C)
+        # F.weight_enchant関数で重み付け
+        y = F.weight_enchant(y, self.W)
 
         #mean = y.data.mean(axis=0, keepdims=True)
         #std = y.data.std(axis=0, keepdims=True)
