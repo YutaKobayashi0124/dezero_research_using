@@ -182,7 +182,7 @@ def flatten(x):
 
 
 # =============================================================================
-# sum / sum_to / broadcast_to / average / matmul / linear / RBF
+# sum / sum_to / broadcast_to / average / matmul / linear / RBF / weight_enchant
 # =============================================================================
 class Sum(Function):
     def __init__(self, axis, keepdims):
@@ -310,10 +310,6 @@ class RBF(Function):
         return y
 
     def backward(self, gy):
-        """x, C = self.inputs
-        diff = x.data[:, np.newaxis, :] - C.data[np.newaxis, :, :]
-        dist_sq = (diff ** 2).sum(axis=2)
-        y = np.exp(-self.beta * dist_sq)"""
         # 順伝播の結果を self.outputs から取得
         y = self.outputs[0]()  # weakref で保存された出力を取得
 
@@ -329,6 +325,26 @@ class RBF(Function):
 
 def rbf(x, centers, beta=1.0):
     return RBF(beta)(x,centers)
+
+class Weight_enchant(Function):
+    def forward(self, x, W):
+        y = x * W[np.newaxis, :] 
+        return y
+    #後日修正する
+    def backwqrd(self, gy):
+        def backward(self, gy, W):
+    # x に関する勾配：gy * W を各要素に掛ける
+    gx = gy * W[np.newaxis, :]  # (N, M) の形状で出力
+    
+    # W に関する勾配：gy * x を `axis=0` に沿って和を取る
+    gW = (gy * self.x).sum(axis=0)  # (M,) の形状で出力
+    
+    return gx, gW
+
+        
+        
+def weight_enchant(x,W):
+    return Weight_enchant(x, W)
 
 
 
