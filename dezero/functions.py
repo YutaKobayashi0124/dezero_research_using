@@ -299,36 +299,33 @@ def linear_simple(x, W, b=None):
     return y
 
 class RBF(Function):
-    def __init__(self, beta=1.0):
-        self.beta = beta
-
-    def forward(self, x, C):
-        diff = x[:, np.newaxis, :] - C[np.newaxis, :, :]
-        self.diff = diff
-        dist_sq = (diff ** 2).sum(axis=2)
-        y = np.exp(-self.beta * dist_sq)
+    def forward(self, x, C, γ):
+        self.γ = γ
+        self.diff = x[:, np.newaxis, :] - C[np.newaxis, :, :]
+        dist_sq = (self.diff ** 2).sum(axis=2)
+        y = np.exp(-(self.γ ** 2) * dist_sq)  # γ の2乗を使う
+        self.dist_sq = dist_sq  # γ の勾配計算のために保存
         return y
 
     def backward(self, gy):
-        """x, C = self.inputs
-        diff = x.data[:, np.newaxis, :] - C.data[np.newaxis, :, :]
-        dist_sq = (diff ** 2).sum(axis=2)
-        y = np.exp(-self.beta * dist_sq)"""
         # 順伝播の結果を self.outputs から取得
         y = self.outputs[0]()  # weakref で保存された出力を取得
 
         # 中間結果を計算
         temp = gy[:, :, np.newaxis] * self.diff * y[:, :, np.newaxis]
-    
-         # 勾配の計算
-        gx = -2 * self.beta * temp.sum(axis=1)
-        gc = 2 * self.beta * temp.sum(axis=0)
 
-        return gx, gc
+        # gx と gc の勾配計算
+        gx = -2 * self.γ ** 2 * temp.sum(axis=1)  # ここでγの2乗を使う
+        gc = 2 * self.γ ** 2 * temp.sum(axis=0)  # ここでγの2乗を使う
+
+        # γ に関する勾配の計算 (γ に対する各出力ごとの勾配を計算)
+        gγ = -(gy * self.dist_sq * y).sum(axis=0)  # 各出力ごとに勾配を計算
+
+        return gx, gc, gγ
 
 
-def rbf(x, centers, beta=1.0):
-    return RBF(beta)(x,centers)
+def rbf(x, centers, γ):
+    return RBF()(x,centers,γ)
 
 
 
