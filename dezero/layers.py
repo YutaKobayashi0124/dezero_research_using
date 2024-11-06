@@ -126,11 +126,10 @@ class RBF(Layer):
         self.out_size = out_size
         self.dtype = dtype
 
-        # 基底の中心（Centers）をパラメータとして定義
+        # 基底の中心（Centers）と半径γをパラメータとして定義
         self.C = Parameter(None, name='C')
+        self.γ = Parameter(None, name='γ')
 
-        """if centers is not None:
-            self.c.data = centers.astype(dtype)"""
         if self.in_size is not None:
             self._init_C()
 
@@ -140,18 +139,25 @@ class RBF(Layer):
         C_data = xp.random.randn(O, I).astype(self.dtype)
         self.C.data = C_data
 
+    def _init_γ(self, xp=np):
+        O = self.out.size
+        #ランダムに半径を生成
+        γ_data =  xp.random.randn(O,).astype(self.dtype)
+        self.γ.data = γ_data
+
     def forward(self, x):
         if self.C.data is None:
             self.in_size = x.shape[1]
             xp = cuda.get_array_module(x)
             self._init_C(xp)
 
-        # F.rbf関数で距離の平方とRBFを計算
-        y = F.rbf(x, self.C)
+        if self.γ.data is None:
+            self.in_size = x.shape[1]
+            xp = cuda.get_array_module(x)
+            self._init_γ(xp)
 
-        #mean = y.data.mean(axis=0, keepdims=True)
-        #std = y.data.std(axis=0, keepdims=True)
-        #y.data = (y.data - mean) / (std + 1e-7)  # ゼロ割りを防ぐために小さな値を足す
+        # F.rbf関数で距離の平方とRBFを計算
+        y = F.rbf(x, self.C, self.γ)
 
         return y
 
