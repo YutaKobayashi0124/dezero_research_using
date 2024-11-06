@@ -128,9 +128,8 @@ class RBF(Layer):
 
         # 基底の中心（Centers）をパラメータとして定義
         self.C = Parameter(None, name='C')
-
-        """if centers is not None:
-            self.c.data = centers.astype(dtype)"""
+        self.W = Parameter(None, name='W')
+        
         if self.in_size is not None:
             self._init_C()
 
@@ -151,6 +150,11 @@ class RBF(Layer):
             self.in_size = x.shape[1]
             xp = cuda.get_array_module(x)
             self._init_C(xp)
+
+        if self.W.data is None:
+            self.in_size = x.shape[1]
+            xp = cuda.get_array_module(x)
+            self._init_W(xp)
 
         # F.rbf関数で距離の平方とRBFを計算
         y = F.rbf(x, self.C)
