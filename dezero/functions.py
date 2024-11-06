@@ -331,15 +331,14 @@ class Weight_enchant(Function):
         y = x * W[np.newaxis, :] 
         return y
     #後日修正する
-    def backwqrd(self, gy):
-        def backward(self, gy, W):
-    # x に関する勾配：gy * W を各要素に掛ける
-    gx = gy * W[np.newaxis, :]  # (N, M) の形状で出力
-    
-    # W に関する勾配：gy * x を `axis=0` に沿って和を取る
-    gW = (gy * self.x).sum(axis=0)  # (M,) の形状で出力
-    
-    return gx, gW
+    def backward(self, gy, W):
+        # x に関する勾配：gy * W を各要素に掛ける
+        gx = gy * W[np.newaxis, :]  # (N, M) の形状で出力
+        
+        # W に関する勾配：gy * x を `axis=0` に沿って和を取る
+        gW = (gy * self.x).sum(axis=0)  # (M,) の形状で出力
+        
+        return gx, gW
 
         
         
