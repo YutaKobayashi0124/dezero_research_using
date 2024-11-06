@@ -341,9 +341,8 @@ class Weight_enchant(Function):
         return gx, gW
 
         
-        
 def weight_enchant(x,W):
-    return Weight_enchant(x, W)
+    return Weight_enchant()(x, W)
 
 
 
