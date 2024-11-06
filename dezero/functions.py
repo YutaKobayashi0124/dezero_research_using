@@ -329,6 +329,7 @@ def rbf(x, centers, beta=1.0):
 class Weight_enchant(Function):
     def forward(self, x, W):
         self.W = W[np.newaxis, :] 
+        self.x = x
         y = x * self.W 
         return y
     #後日修正する
