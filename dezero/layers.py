@@ -161,10 +161,6 @@ class RBF(Layer):
         # F.weight_enchant関数で重み付け
         y = F.weight_enchant(y, self.W)
 
-        #mean = y.data.mean(axis=0, keepdims=True)
-        #std = y.data.std(axis=0, keepdims=True)
-        #y.data = (y.data - mean) / (std + 1e-7)  # ゼロ割りを防ぐために小さな値を足す
-
         return y
 
 
