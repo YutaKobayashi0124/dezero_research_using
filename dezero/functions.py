@@ -313,11 +313,11 @@ class RBF(Function):
         y = self.outputs[0]()  # weakrefで保存された出力を取得
 
         # 中間結果を計算
-        temp = gy[:, :, np.newaxis] * self.diff * y[:, :, np.newaxis]
+        temp = gy[:, :, np.newaxis] * self.diff * y[:, :, np.newaxis] * (self.γ ** 2)
 
         # gx と gc の勾配計算
-        gx = -2 * self.γ ** 2 * temp.sum(axis=1)  # 各サンプルに対してγの2乗を使用して勾配を計算
-        gc = 2 * self.γ ** 2 * temp.sum(axis=0)  # 中心Cに対する勾配計算
+        gx = -2 * temp.sum(axis=1)  # 各サンプルに対してγの2乗を使用して勾配を計算
+        gc = 2 * temp.sum(axis=0)  # 中心Cに対する勾配計算
 
         # γ に関する勾配の計算 (γ の各基底に対する勾配)
         gγ = -(gy * self.dist_sq * y).sum(axis=(0, 1))  # 各基底ごとに勾配を計算
