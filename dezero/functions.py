@@ -298,34 +298,36 @@ def linear_simple(x, W, b=None):
     t.data = None  # Release t.data (ndarray) for memory efficiency
     return y
 
+# RBF関数の定義
 class RBF(Function):
     def forward(self, x, C, γ):
         self.γ = γ
-        self.diff = x[:, np.newaxis, :] - C[np.newaxis, :, :]
-        dist_sq = (self.diff ** 2).sum(axis=2)
-        y = np.exp(-(self.γ ** 2) * dist_sq)  # γ の2乗を使う
-        self.dist_sq = dist_sq  # γ の勾配計算のために保存
+        self.diff = x[:, np.newaxis, :] - C[np.newaxis, :, :]  # 各サンプルに対する中心までの差分
+        dist_sq = (self.diff ** 2).sum(axis=2)  # 距離の平方
+        y = np.exp(-(self.γ ** 2) * dist_sq)  # γの2乗を使用してRBFを計算
+        self.dist_sq = dist_sq  # γの勾配計算のために保存
         return y
 
     def backward(self, gy):
-        # 順伝播の結果を self.outputs から取得
-        y = self.outputs[0]()  # weakref で保存された出力を取得
+        # 順伝播の結果を取得
+        y = self.outputs[0]()  # weakrefで保存された出力を取得
 
         # 中間結果を計算
         temp = gy[:, :, np.newaxis] * self.diff * y[:, :, np.newaxis]
 
         # gx と gc の勾配計算
-        gx = -2 * self.γ ** 2 * temp.sum(axis=1)  # ここでγの2乗を使う
-        gc = 2 * self.γ ** 2 * temp.sum(axis=0)  # ここでγの2乗を使う
+        gx = -2 * self.γ ** 2 * temp.sum(axis=1)  # 各サンプルに対してγの2乗を使用して勾配を計算
+        gc = 2 * self.γ ** 2 * temp.sum(axis=0)  # 中心Cに対する勾配計算
 
-        # γ に関する勾配の計算 (γ に対する各出力ごとの勾配を計算)
-        gγ = -(gy * self.dist_sq * y).sum(axis=0)  # 各出力ごとに勾配を計算
+        # γ に関する勾配の計算 (γ の各基底に対する勾配)
+        gγ = -(gy * self.dist_sq * y).sum(axis=(0, 1))  # 各基底ごとに勾配を計算
 
         return gx, gc, gγ
 
 
+# RBF関数の呼び出し
 def rbf(x, centers, γ):
-    return RBF()(x,centers,γ)
+    return RBF()(x, centers, γ)
 
 
 
