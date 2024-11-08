@@ -142,7 +142,7 @@ class RBF(Layer):
     def _init_γ(self, xp=np):
         O = self.out_size
         #ランダムに半径を生成
-        γ_data =  xp.random.randn(O,).astype(self.dtype)
+        γ_data =  xp.random.randn(O,1).astype(self.dtype)
         self.γ.data = γ_data
 
     def forward(self, x):
